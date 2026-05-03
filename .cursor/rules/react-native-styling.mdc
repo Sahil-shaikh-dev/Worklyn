@@ -1,0 +1,33 @@
+---
+description: Use react-native-unistyles for all styles; keep styles in separate files per screen/component.
+globs: "**/*.{tsx,ts}"
+alwaysApply: false
+---
+
+# Styling (Unistyles)
+
+- Do **not** use `StyleSheet` from `react-native`. Use `StyleSheet` from `react-native-unistyles` only.
+- Do **not** inline style objects for layout or visual styling when a named style would be used; define styles in a **dedicated styles module** next to the component.
+- **File layout:** same folder as the screen or component — e.g. `src/pages/Home/index.tsx` and `src/pages/Home/styles.ts`. Shared layout pieces live under `src/components/layout/` (e.g. `AppHeaderBar`). Name the file `styles.ts` unless multiple style modules in one folder require a more specific name.
+- **Imports:** the component file imports primitives from `react-native` (`View`, `Text`, etc.); the styles file imports `StyleSheet` from `react-native-unistyles` and exports the result of `StyleSheet.create` (e.g. `export const styles = StyleSheet.create({ ... })`).
+- **Design tokens:** semantic colors, spacing, radius, and typography live in [`src/theme`](src/theme). Import [`src/theme/configure`](src/theme/configure) once from the app entry (`App.tsx`). Prefer `StyleSheet.create(theme => ({ ... }))` and use `theme.colors.*`, `theme.spacing`, etc., instead of hard-coded values.
+- **Reusable UI:** shared controls live under [`src/components/ui`](src/components/ui) (`Button`, `Input`, `Card`, `Chip`, …) with colocated `styles.ts` per component; prefer them over one-off primitives so visual updates propagate app-wide.
+- **Jest:** keep `setupFilesAfterEnv` including `react-native-unistyles/mocks` so tests do not load the Nitro native StyleSheet.
+
+```tsx
+// index.tsx — no StyleSheet from react-native
+import { Text, View } from 'react-native';
+import { styles } from './styles';
+```
+
+```ts
+// styles.ts
+import { StyleSheet } from 'react-native-unistyles';
+
+export const styles = StyleSheet.create(theme => ({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+}));
+```

@@ -1,0 +1,12 @@
+---
+description: Consult and maintain shared engineering context for RN, Unistyles, and key libs—avoid repeated research.
+alwaysApply: true
+---
+
+# Library research and shared context
+
+- **Before** doing substantive work on **React Native**, **react-native-unistyles**, **Jest** in this repo, or other stack libraries: read **[`docs/context.md`](docs/context.md)** for Worklyn-specific wiring and doc entry points.
+- For behavior, APIs, and edge cases: prefer **official documentation** (links in `docs/context.md`) and established patterns over guessing. Use targeted web/doc lookup when the context file does not cover the topic.
+- **After** you resolve something non-obvious (config, babel, native module, test mock, version constraint): add a **short, durable bullet** to the relevant section of **`docs/context.md`** with a link to the official doc, issue, or guide—so the next session does not re-research the same thing.
+- Keep **`docs/context.md`** concise: bullets and links, not full API dumps. Move long tutorials to official docs only.
+- **Cursor rules** (`.cursor/rules/*.mdc`) stay for **always-follow** conventions; **`docs/context.md`** is for **discoverable facts + doc map** that evolve with the project.

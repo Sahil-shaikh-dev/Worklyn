@@ -1,0 +1,18 @@
+---
+description: Use React Native Reusables for UI primitives; add components via the official CLI into the project.
+globs: "**/*.{tsx,ts}"
+alwaysApply: false
+---
+
+# UI components ([React Native Reusables](https://reactnativereusables.com/docs))
+
+- Prefer **React Native Reusables** for buttons, inputs, dialogs, and other catalog UI instead of hand-rolling from raw `react-native` primitives when a reusable exists in [their docs](https://reactnativereusables.com/docs).
+- **Do not copy-paste from the website blindly** — add the real source into the repo with the CLI from the project root (see [Installation / Add components](https://reactnativereusables.com/docs/installation)):
+
+  `npx @react-native-reusables/cli@latest add <component>`
+
+  Example: `npx @react-native-reusables/cli@latest add button` then import per the generated paths (commonly `@/components/ui/button` and `@/components/ui/text` as in their docs).
+
+- **First-time setup:** if `components/ui` or `components.json` is missing, follow [Installation](https://reactnativereusables.com/docs/installation) (or `npx @react-native-reusables/cli@latest init` for a greenfield app). Use `npx @react-native-reusables/cli@latest doctor` to verify. Path alias `@/*` and NativeWind/Tailwind steps are part of their stack — align `tsconfig` / Metro with their guide when wiring an existing app.
+
+- After adding a component, **import from the local path** the CLI created; do not assume a package name like `react-native-reusables` unless the project explicitly adds one.

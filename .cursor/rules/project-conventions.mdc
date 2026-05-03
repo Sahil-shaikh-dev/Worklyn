@@ -1,0 +1,12 @@
+---
+description: How Worklyn project rules are stored and updated when the user asks for durable patterns.
+alwaysApply: true
+---
+
+# Project conventions and memory
+
+- **Source of truth:** Persistent rules for this repo live in `.cursor/rules/` as `.mdc` files (YAML frontmatter + markdown). Extended facts, doc links, and “already researched” project wiring live in **[`docs/context.md`](docs/context.md)** — consult and update it per `research-and-context.mdc`.
+- **When the user asks to always use a pattern, never forget something, or apply a rule project-wide:** add or update a rule file immediately. Prefer a **focused** rule (one topic) with `globs` when it only applies to certain files; use `alwaysApply: true` only for repo-wide process (like this file) or standards that touch every change.
+- **Styling** is defined in `react-native-styling.mdc` (Unistyles + separate `styles.ts` per feature folder).
+- **UI primitives** from the shared catalog: `react-native-reusables.mdc` ([React Native Reusables](https://reactnativereusables.com/docs) — add components with the CLI, then import locally).
+- Keep each rule **short and actionable**; link to official docs for long API explanations instead of copying them.

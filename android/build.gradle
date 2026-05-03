@@ -19,3 +19,15 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+// @react-native-async-storage/async-storage 3.x — `storage-android` is only in the package local_repo.
+// https://github.com/react-native-async-storage/async-storage#readme
+allprojects {
+    repositories {
+        maven {
+            url("${rootProject.projectDir}/../node_modules/@react-native-async-storage/async-storage/android/local_repo")
+        }
+        google()
+        mavenCentral()
+    }
+}
