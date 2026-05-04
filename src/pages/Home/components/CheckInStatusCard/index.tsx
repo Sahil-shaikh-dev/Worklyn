@@ -30,12 +30,9 @@ export function CheckInStatusCard({
   onClockOut,
 }: CheckInStatusCardProps) {
   const { theme } = useUnistyles();
-  const showDate =
-    sessionDateLabel != null && sessionDateLabel.trim() !== '';
+  const showDate = sessionDateLabel != null && sessionDateLabel.trim() !== '';
   const showBreakTimer =
-    breakTimerHms != null &&
-    breakTimerHms !== '' &&
-    sessionPhase === 'paused';
+    breakTimerHms != null && breakTimerHms !== '' && sessionPhase === 'paused';
 
   return (
     <Card>
@@ -46,7 +43,8 @@ export function CheckInStatusCard({
             <Text
               accessibilityLabel={`Session date ${sessionDateLabel}`}
               numberOfLines={1}
-              style={styles.sessionDate}>
+              style={styles.sessionDate}
+            >
               {sessionDateLabel}
             </Text>
           ) : null}
@@ -57,7 +55,8 @@ export function CheckInStatusCard({
         {showBreakTimer ? (
           <Text
             accessibilityLabel={`On break, ${breakTimerHms}`}
-            style={styles.breakTimerGold}>
+            style={styles.breakTimerGold}
+          >
             On break — {breakTimerHms}
           </Text>
         ) : null}
@@ -71,7 +70,8 @@ export function CheckInStatusCard({
               accessibilityLabel="Clock in"
               onPress={onClockIn}
               style={styles.fullWidthAction}
-              variant="primary">
+              variant="primary"
+            >
               <View style={styles.clockInRow}>
                 <Play
                   color={theme.colors.primaryForeground}
@@ -90,7 +90,8 @@ export function CheckInStatusCard({
               accessibilityLabel="Clock out"
               onPress={onClockOut}
               style={styles.actionButton}
-              variant="primaryOutline">
+              variant="primaryOutline"
+            >
               <View style={styles.clockOutRow}>
                 <LogOut
                   color={theme.colors.primary}
@@ -104,7 +105,8 @@ export function CheckInStatusCard({
               accessibilityLabel="Pause for break"
               onPress={onStartPause}
               style={styles.actionButton}
-              variant="secondary">
+              variant="secondary"
+            >
               <View style={styles.pauseRow}>
                 <Pause
                   color={theme.colors.secondaryForeground}
@@ -123,7 +125,8 @@ export function CheckInStatusCard({
               accessibilityLabel="Resume work timer"
               onPress={onResumeFromPause}
               style={styles.fullWidthAction}
-              variant="primary">
+              variant="primary"
+            >
               <View style={styles.clockInRow}>
                 <Play
                   color={theme.colors.primaryForeground}

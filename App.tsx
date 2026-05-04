@@ -7,7 +7,7 @@ import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AttendanceSessionProvider } from './src/features/attendance';
 import { UserProfileProvider } from './src/features/userProfile';
-import Home from './src/pages/Home';
+import { RootNavigator } from './src/navigation';
 
 function App() {
   return (
@@ -15,7 +15,7 @@ function App() {
       <UserProfileProvider>
         <AttendanceSessionProvider>
           <StatusBar barStyle="light-content" />
-          <Home />
+          <RootNavigator />
         </AttendanceSessionProvider>
       </UserProfileProvider>
     </SafeAreaProvider>

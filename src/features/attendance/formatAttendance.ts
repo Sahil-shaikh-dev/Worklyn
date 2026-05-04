@@ -1,6 +1,6 @@
 import {
   dateFormatMedium,
-  timeFormatHms24h,
+  timeFormatHms12h,
 } from '../../constants/dateTime';
 
 export function formatDateHeading(d: Date, locale?: string): string {
@@ -8,7 +8,7 @@ export function formatDateHeading(d: Date, locale?: string): string {
 }
 
 export function formatTimePrecise(d: Date, locale?: string): string {
-  return new Intl.DateTimeFormat(locale, { ...timeFormatHms24h }).format(d);
+  return new Intl.DateTimeFormat(locale, { ...timeFormatHms12h }).format(d);
 }
 
 /**

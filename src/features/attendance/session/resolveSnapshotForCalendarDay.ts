@@ -17,6 +17,19 @@ function inferBusinessDayKeyFromLegacyEvents(
   return getLocalCalendarDayKey(last.at);
 }
 
+/** `businessDayKey` on snapshot, or inferred from last event (legacy payloads). */
+export function inferStoredBusinessDayKey(
+  snapshot: AttendanceSessionSnapshot,
+): string | null {
+  if (snapshot.events.length === 0) {
+    return null;
+  }
+  return (
+    snapshot.businessDayKey ??
+    inferBusinessDayKeyFromLegacyEvents(snapshot.events)
+  );
+}
+
 /**
  * Drops persisted session when the stored **`businessDayKey`** is not today's local
  * calendar day. Migrates v1 payloads missing `businessDayKey` using the last event's local date.
@@ -35,11 +48,8 @@ export function resolveSnapshotForCalendarDay(
     };
   }
 
-  const storedKey =
-    snapshot.businessDayKey ??
-    inferBusinessDayKeyFromLegacyEvents(snapshot.events);
-
-  if (storedKey !== todayKey) {
+  const storedKey = inferStoredBusinessDayKey(snapshot);
+  if (storedKey == null || storedKey !== todayKey) {
     return {
       events: [],
       updatedAt: now,

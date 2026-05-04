@@ -9,6 +9,10 @@ import {
   type ReactNode,
 } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
+import {
+  mirrorLiveSessionToHistoryIfToday,
+  resolveLiveSnapshotWithArchive,
+} from '../history';
 import type {
   AttendanceAction,
   AttendanceSessionSnapshot,
@@ -20,7 +24,6 @@ import {
   loadAttendanceSession,
   saveAttendanceSession,
 } from '../session/attendanceSessionStorage';
-import { resolveSnapshotForCalendarDay } from '../session/resolveSnapshotForCalendarDay';
 import { deriveSessionPhase } from '../session/deriveSessionPhase';
 import { formatElapsedAsHms } from '../session/formatElapsedHms';
 import {
@@ -59,28 +62,39 @@ export function AttendanceSessionProvider({ children }: { children: ReactNode })
   const [snapshot, setSnapshot] = useState<AttendanceSessionSnapshot>(emptySnapshot);
   const [now, setNow] = useState(() => new Date());
   const hydratedRef = useRef(false);
+  const snapshotRef = useRef<AttendanceSessionSnapshot>(emptySnapshot());
+
+  useEffect(() => {
+    snapshotRef.current = snapshot;
+  }, [snapshot]);
 
   useEffect(() => {
     let cancelled = false;
-    loadAttendanceSession()
-      .then(loaded => {
-        if (!cancelled) {
-          const resolved = resolveSnapshotForCalendarDay(loaded, new Date());
-          setSnapshot(resolved);
-          hydratedRef.current = true;
-          if (!attendanceSnapshotsEqual(loaded, resolved)) {
-            Promise.resolve().then(() =>
-              saveAttendanceSession(resolved).catch(err => {
-                console.error('AttendanceSession: persist after day resolve failed', err);
-              }),
-            );
-          }
+    (async () => {
+      try {
+        const loaded = await loadAttendanceSession();
+        if (cancelled) {
+          return;
         }
-      })
-      .catch(err => {
+        const anchor = new Date();
+        const resolved = await resolveLiveSnapshotWithArchive(loaded, anchor);
+        setSnapshot(resolved);
+        hydratedRef.current = true;
+        if (!attendanceSnapshotsEqual(loaded, resolved)) {
+          await saveAttendanceSession(resolved).catch(err => {
+            console.error('AttendanceSession: persist after day resolve failed', err);
+          });
+        }
+        await mirrorLiveSessionToHistoryIfToday(resolved, anchor).catch(err => {
+          console.error('AttendanceSession: mirror history after load failed', err);
+        });
+      } catch (err) {
         console.error('AttendanceSession: load failed', err);
         hydratedRef.current = true;
-      });
+      }
+    })().catch(() => {
+      /* unhandled rejection guard */
+    });
     return () => {
       cancelled = true;
     };
@@ -101,16 +115,23 @@ export function AttendanceSessionProvider({ children }: { children: ReactNode })
         if (!hydratedRef.current) {
           return;
         }
-        setSnapshot(prev => {
-          const resolved = resolveSnapshotForCalendarDay(prev, fresh);
+        (async () => {
+          const prev = snapshotRef.current;
+          const resolved = await resolveLiveSnapshotWithArchive(prev, fresh);
           if (!attendanceSnapshotsEqual(prev, resolved)) {
-            Promise.resolve().then(() =>
-              saveAttendanceSession(resolved).catch(err => {
-                console.error('AttendanceSession: save after day rollover failed', err);
-              }),
-            );
+            await saveAttendanceSession(resolved).catch(err => {
+              console.error('AttendanceSession: save after day rollover failed', err);
+            });
+            setSnapshot(resolved);
           }
-          return resolved;
+          await mirrorLiveSessionToHistoryIfToday(resolved, fresh).catch(err => {
+            console.error(
+              'AttendanceSession: mirror history after rollover failed',
+              err,
+            );
+          });
+        })().catch(() => {
+          /* unhandled rejection guard */
         });
       }
     });
@@ -127,11 +148,16 @@ export function AttendanceSessionProvider({ children }: { children: ReactNode })
       if (!result.ok) {
         return prev;
       }
-      Promise.resolve().then(() =>
-        saveAttendanceSession(result.snapshot).catch(err => {
+      (async () => {
+        await saveAttendanceSession(result.snapshot).catch(err => {
           console.error('AttendanceSession: save failed', err);
-        }),
-      );
+        });
+        await mirrorLiveSessionToHistoryIfToday(result.snapshot, at).catch(err => {
+          console.error('AttendanceSession: mirror history after save failed', err);
+        });
+      })().catch(() => {
+        /* unhandled rejection guard */
+      });
       return result.snapshot;
     });
   }, []);
@@ -147,16 +173,20 @@ export function AttendanceSessionProvider({ children }: { children: ReactNode })
     if (!hydratedRef.current) {
       return;
     }
-    setSnapshot(prev => {
-      const resolved = resolveSnapshotForCalendarDay(prev, fresh);
+    (async () => {
+      const prev = snapshotRef.current;
+      const resolved = await resolveLiveSnapshotWithArchive(prev, fresh);
       if (!attendanceSnapshotsEqual(prev, resolved)) {
-        Promise.resolve().then(() =>
-          saveAttendanceSession(resolved).catch(err => {
-            console.error('AttendanceSession: save after calendar reconcile failed', err);
-          }),
-        );
+        await saveAttendanceSession(resolved).catch(err => {
+          console.error('AttendanceSession: save after calendar reconcile failed', err);
+        });
+        setSnapshot(resolved);
       }
-      return resolved;
+      await mirrorLiveSessionToHistoryIfToday(resolved, fresh).catch(err => {
+        console.error('AttendanceSession: mirror history after reconcile failed', err);
+      });
+    })().catch(() => {
+      /* unhandled rejection guard */
     });
   }, []);
 

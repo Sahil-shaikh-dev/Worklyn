@@ -36,13 +36,13 @@ export function buildSemanticDark() {
     input: h(neutral.n700),
     ring: h(brand.b400),
 
-    chart1: h('190 46% 52%'),
-    chart2: h('173 50% 45%'),
-    chart3: h('197 45% 40%'),
-    chart4: h('43 55% 58%'),
-    chart5: h('27 65% 55%'),
+    chart1: h('194 56% 51%'),
+    chart2: h('188 52% 56%'),
+    chart3: h('200 48% 52%'),
+    chart4: h('206 50% 58%'),
+    chart5: h('182 46% 50%'),
 
-    /** Break / pause — gold on dark zinc; distinct from brand primary (teal). */
+    /** Break / pause — gold on dark surfaces; distinct from brand primary (teal). */
     pause: h('42 72% 50%'),
     pauseForeground: h('38 40% 9%'),
     pauseText: h('43 34% 76%'),

@@ -8,6 +8,7 @@ export {
   mockAttendanceDemoNow,
   mockAttendanceEvents,
 } from './mockSessionTimeline';
+export * from './history';
 export * from './session';
 export {
   buildTimelineRows,

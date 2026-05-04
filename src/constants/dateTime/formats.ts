@@ -1,5 +1,7 @@
 /**
  * Intl.DateTimeFormat option presets for consistent time/date display app-wide.
+ * Wall-clock times (e.g. timeline, history) use 12-hour via `timeFormatHms12h` in `formatTimePrecise`.
+ * Elapsed durations use `formatElapsedAsHms` (H:MM:SS), not these presets.
  */
 export const timeFormatHms12h = {
   hour: 'numeric',

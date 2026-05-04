@@ -28,7 +28,11 @@ export function AppHeaderBar({
               delayLongPress={450}
               hitSlop={8}
               onLongPress={onAvatarLongPress}
-              style={({ pressed }) => [styles.avatar, pressed && styles.avatarPressed]}>
+              style={({ pressed }) => [
+                styles.avatar,
+                pressed && styles.avatarPressed,
+              ]}
+            >
               {avatarInner}
             </Pressable>
           ) : (

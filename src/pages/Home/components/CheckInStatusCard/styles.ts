@@ -109,4 +109,3 @@ export const styles = StyleSheet.create(theme => ({
     fontWeight: theme.font.weight.semibold,
   },
 }));
-
