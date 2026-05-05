@@ -24,8 +24,8 @@ export const styles = StyleSheet.create(theme => ({
   /** Fixed header: remaining / used cards (not in timeline scroll). */
   summaryBlock: {
     paddingHorizontal: theme.spacing[4],
-    paddingTop: theme.spacing[3],
-    paddingBottom: theme.spacing[3],
+    paddingTop: theme.spacing[4],
+    paddingBottom: theme.spacing[4],
   },
   /** Only the leave history list scrolls. */
   timelineScroll: {
@@ -55,16 +55,16 @@ export const styles = StyleSheet.create(theme => ({
   },
   summaryRow: {
     flexDirection: 'row',
-    gap: theme.spacing[2],
+    gap: theme.spacing[3],
   },
   summaryCell: {
     flex: 1,
     minWidth: 0,
   },
   metricCard: {
-    paddingVertical: theme.spacing[2],
+    paddingVertical: theme.spacing[3],
     paddingHorizontal: theme.spacing[3],
-    borderRadius: theme.radius.md,
+    borderRadius: theme.radius.lg,
     backgroundColor: theme.colors.card,
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -82,14 +82,14 @@ export const styles = StyleSheet.create(theme => ({
   },
   metricLabel: {
     fontFamily: theme.font.family.sans,
-    fontSize: theme.font.size.xs,
+    fontSize: theme.font.size.sm,
     fontWeight: theme.font.weight.medium,
     color: theme.colors.mutedForeground,
-    marginBottom: theme.spacing[1],
+    marginBottom: theme.spacing[2],
   },
   metricValue: {
     fontFamily: theme.font.family.sans,
-    fontSize: theme.font.size.sm,
+    fontSize: theme.font.size.xl,
     fontWeight: theme.font.weight.semibold,
     color: theme.colors.cardForeground,
   },

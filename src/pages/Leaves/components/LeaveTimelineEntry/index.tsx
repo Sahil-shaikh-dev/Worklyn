@@ -77,7 +77,8 @@ function LeaveTimelineEntryInner({
       entering={listItemEnter(reducedMotion)}
       exiting={listItemExit(reducedMotion)}
       layout={listLayoutTransition}
-      style={styles.row}>
+      style={styles.row}
+    >
       <View style={styles.track}>
         {isFirst ? (
           <View style={styles.lineUpPlaceholder} />
@@ -86,9 +87,17 @@ function LeaveTimelineEntryInner({
         )}
         <View style={nodeStyle}>
           {variant === 'half' ? (
-            <Clock color={theme.colors.primaryForeground} size={18} strokeWidth={2.2} />
+            <Clock
+              color={theme.colors.primaryForeground}
+              size={20}
+              strokeWidth={2.2}
+            />
           ) : (
-            <Calendar color={theme.colors.primaryForeground} size={18} strokeWidth={2.2} />
+            <Calendar
+              color={theme.colors.primaryForeground}
+              size={20}
+              strokeWidth={2.2}
+            />
           )}
         </View>
         {isLast ? (
@@ -111,8 +120,11 @@ function LeaveTimelineEntryInner({
           onPressOut={() => animatePress(pressProgress, false, reducedMotion)}
           style={({ pressed }) => [
             cardAnimatedStyle,
-            onLongPressCard != null && pressed ? styles.cardPressablePressed : null,
-          ]}>
+            onLongPressCard != null && pressed
+              ? styles.cardPressablePressed
+              : null,
+          ]}
+        >
           <Card style={cardStyle}>
             {dateHeading === '' ? null : (
               <Text style={styles.dateHeading}>{dateHeading}</Text>

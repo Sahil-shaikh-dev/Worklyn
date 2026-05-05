@@ -4,7 +4,7 @@ export const styles = StyleSheet.create(theme => ({
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingBottom: theme.spacing[5],
+    paddingBottom: theme.spacing[6],
   },
   track: {
     width: 48,
@@ -27,8 +27,8 @@ export const styles = StyleSheet.create(theme => ({
     marginBottom: theme.spacing[1],
   },
   node: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     borderRadius: theme.radius.full,
     backgroundColor: theme.colors.primary,
     alignItems: 'center',
@@ -52,15 +52,15 @@ export const styles = StyleSheet.create(theme => ({
   contentColumn: {
     flex: 1,
     minWidth: 0,
-    gap: theme.spacing[2],
+    gap: theme.spacing[3],
   },
   cardPressablePressed: {
     opacity: 0.92,
   },
   timelineEntryCard: {
     alignSelf: 'stretch',
-    padding: theme.spacing[3],
-    gap: theme.spacing[2],
+    padding: theme.spacing[4],
+    gap: theme.spacing[3],
   },
   /** Full day: primary strip — reads as the stronger “whole day” block. */
   timelineEntryCardFull: {
@@ -92,35 +92,35 @@ export const styles = StyleSheet.create(theme => ({
   },
   dateChipText: {
     color: theme.colors.foreground,
-    fontSize: theme.font.size.xs,
+    fontSize: theme.font.size.sm,
     fontWeight: theme.font.weight.medium,
-    lineHeight: theme.font.lineHeight.xs,
+    lineHeight: theme.font.lineHeight.sm,
     fontVariant: ['tabular-nums'],
   },
   dateHeading: {
     color: theme.colors.mutedForeground,
-    fontSize: theme.font.size.xs,
+    fontSize: theme.font.size.sm,
     fontWeight: theme.font.weight.medium,
-    lineHeight: theme.font.lineHeight.xs,
+    lineHeight: theme.font.lineHeight.sm,
   },
   title: {
     color: theme.colors.foreground,
-    fontSize: theme.font.size.lg,
+    fontSize: theme.font.size.xl,
     fontWeight: theme.font.weight.bold,
-    lineHeight: theme.font.lineHeight.lg,
+    lineHeight: theme.font.lineHeight.xl,
   },
   /** First/second half — same line as “Half day”, lighter than the main label. */
   titleSuffix: {
     color: theme.colors.mutedForeground,
-    fontSize: theme.font.size.sm,
+    fontSize: theme.font.size.base,
     fontWeight: theme.font.weight.medium,
-    lineHeight: theme.font.lineHeight.lg,
+    lineHeight: theme.font.lineHeight.base,
   },
   subtitle: {
     color: theme.colors.mutedForeground,
-    fontSize: theme.font.size.sm,
+    fontSize: theme.font.size.base,
     fontWeight: theme.font.weight.normal,
-    lineHeight: theme.font.lineHeight.sm,
+    lineHeight: theme.font.lineHeight.base,
   },
   reasonBlock: {
     gap: theme.spacing[1],
@@ -128,14 +128,14 @@ export const styles = StyleSheet.create(theme => ({
   },
   reasonLabel: {
     color: theme.colors.mutedForeground,
-    fontSize: theme.font.size.xs,
+    fontSize: theme.font.size.sm,
     fontWeight: theme.font.weight.medium,
-    lineHeight: theme.font.lineHeight.xs,
+    lineHeight: theme.font.lineHeight.sm,
   },
   reasonText: {
     color: theme.colors.foreground,
-    fontSize: theme.font.size.sm,
+    fontSize: theme.font.size.base,
     fontWeight: theme.font.weight.normal,
-    lineHeight: theme.font.lineHeight.sm,
+    lineHeight: theme.font.lineHeight.base,
   },
 }));
