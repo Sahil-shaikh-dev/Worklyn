@@ -17,12 +17,8 @@ export const styles = StyleSheet.create(theme => ({
     backgroundColor: theme.colors.border,
     marginBottom: theme.spacing[1],
   },
-  /** Connector tint so the rail matches pause nodes (mirrors Leave half-day rail). */
-  lineAccentPause: {
-    backgroundColor: theme.colors.pause,
-    opacity: 0.55,
-  },
-  lineAccentResume: {
+  /** Tints the connector next to half-day rows so the rail matches the node. */
+  lineAccentHalf: {
     backgroundColor: theme.colors.chart2,
     opacity: 0.55,
   },
@@ -40,11 +36,8 @@ export const styles = StyleSheet.create(theme => ({
     borderWidth: 2,
     borderColor: theme.colors.background,
   },
-  nodeMuted: {
+  nodeHalf: {
     backgroundColor: theme.colors.chart2,
-  },
-  nodePause: {
-    backgroundColor: theme.colors.pause,
   },
   lineDown: {
     width: 2,
@@ -56,40 +49,31 @@ export const styles = StyleSheet.create(theme => ({
     minHeight: theme.spacing[8],
     marginTop: theme.spacing[1],
   },
-  /** Right column: time chip sits above the entry card (not inside it). */
   contentColumn: {
     flex: 1,
     minWidth: 0,
     gap: theme.spacing[2],
   },
-  timelineCardPressable: {
-    borderRadius: theme.radius.lg,
+  cardPressablePressed: {
+    opacity: 0.92,
   },
-  timelineCardPressed: {
-    opacity: 0.9,
-  },
-  /** Merged onto `Card` — title, description, meta; track and time chip stay outside. */
   timelineEntryCard: {
     alignSelf: 'stretch',
     padding: theme.spacing[3],
     gap: theme.spacing[2],
   },
-  /** Clock in/out — strong primary strip (same role as Leave “full day”). */
-  timelineEntryCardPrimary: {
+  /** Full day: primary strip — reads as the stronger “whole day” block. */
+  timelineEntryCardFull: {
     borderLeftWidth: 4,
     borderLeftColor: theme.colors.primary,
   },
-  /** Pause — pause-colored strip; surface matches default card (same bg as all rows). */
-  timelineEntryCardPause: {
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.pause,
-  },
-  /** Resume — teal strip; surface matches default card. */
-  timelineEntryCardResume: {
+  /** Half day: softer surface + teal strip — lighter footprint than full day. */
+  timelineEntryCardHalf: {
     borderLeftWidth: 4,
     borderLeftColor: theme.colors.chart2,
+    backgroundColor: theme.colors.muted,
   },
-  timeChip: {
+  dateChip: {
     alignSelf: 'flex-start',
     backgroundColor: theme.colors.muted,
     borderRadius: theme.radius.sm,
@@ -98,19 +82,15 @@ export const styles = StyleSheet.create(theme => ({
     paddingHorizontal: theme.spacing[2],
     paddingVertical: 2,
   },
-  timeChipPrimary: {
+  dateChipFull: {
     borderColor: theme.colors.primary,
     backgroundColor: theme.colors.card,
   },
-  timeChipPause: {
-    borderColor: theme.colors.pause,
-    backgroundColor: theme.colors.muted,
-  },
-  timeChipResume: {
+  dateChipHalf: {
     borderColor: theme.colors.chart2,
     backgroundColor: theme.colors.muted,
   },
-  timePreciseChip: {
+  dateChipText: {
     color: theme.colors.foreground,
     fontSize: theme.font.size.xs,
     fontWeight: theme.font.weight.medium,
@@ -129,27 +109,33 @@ export const styles = StyleSheet.create(theme => ({
     fontWeight: theme.font.weight.bold,
     lineHeight: theme.font.lineHeight.lg,
   },
-  description: {
+  /** First/second half — same line as “Half day”, lighter than the main label. */
+  titleSuffix: {
+    color: theme.colors.mutedForeground,
+    fontSize: theme.font.size.sm,
+    fontWeight: theme.font.weight.medium,
+    lineHeight: theme.font.lineHeight.lg,
+  },
+  subtitle: {
     color: theme.colors.mutedForeground,
     fontSize: theme.font.size.sm,
     fontWeight: theme.font.weight.normal,
     lineHeight: theme.font.lineHeight.sm,
   },
-  metaLine: {
-    color: theme.colors.chart2,
-    fontSize: theme.font.size.sm,
+  reasonBlock: {
+    gap: theme.spacing[1],
+    marginTop: theme.spacing[1],
+  },
+  reasonLabel: {
+    color: theme.colors.mutedForeground,
+    fontSize: theme.font.size.xs,
     fontWeight: theme.font.weight.medium,
+    lineHeight: theme.font.lineHeight.xs,
+  },
+  reasonText: {
+    color: theme.colors.foreground,
+    fontSize: theme.font.size.sm,
+    fontWeight: theme.font.weight.normal,
     lineHeight: theme.font.lineHeight.sm,
-  },
-  titlePause: {
-    color: theme.colors.pauseText,
-  },
-  descriptionPause: {
-    color: theme.colors.pauseText,
-    opacity: 0.92,
-  },
-  metaLinePause: {
-    color: theme.colors.pause,
-    fontWeight: theme.font.weight.semibold,
   },
 }));

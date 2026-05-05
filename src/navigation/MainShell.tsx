@@ -1,5 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { History as HistoryIcon, Home as HomeIcon } from 'lucide-react-native';
+import {
+  Calendar,
+  History as HistoryIcon,
+  Home as HomeIcon,
+} from 'lucide-react-native';
 import { View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +11,7 @@ import { AppHeaderBar } from '../components/layout';
 import { DisplayNameModal } from '../components/ui';
 import HomeScreen from '../pages/Home';
 import HistoryScreen from '../pages/History';
+import LeavesScreen from '../pages/Leaves';
 import { styles } from './MainShell/styles';
 import type { RootTabParamList } from './types';
 import { useMainShellProfileHeader } from './useMainShellProfileHeader';
@@ -25,6 +30,10 @@ function HomeTabBarIcon({ color, size }: TabBarIconProps) {
 
 function HistoryTabBarIcon({ color, size }: TabBarIconProps) {
   return <HistoryIcon color={color} size={size} />;
+}
+
+function LeavesTabBarIcon({ color, size }: TabBarIconProps) {
+  return <Calendar color={color} size={size} />;
 }
 
 export function MainShell() {
@@ -71,6 +80,14 @@ export function MainShell() {
           options={{
             tabBarIcon: HistoryTabBarIcon,
             tabBarLabel: 'History',
+          }}
+        />
+        <Tab.Screen
+          component={LeavesScreen}
+          name="Leaves"
+          options={{
+            tabBarIcon: LeavesTabBarIcon,
+            tabBarLabel: 'Leaves',
           }}
         />
       </Tab.Navigator>

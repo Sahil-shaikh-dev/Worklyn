@@ -1,5 +1,10 @@
 import { forwardRef, useCallback, useState } from 'react';
-import { TextInput, type TextInputProps } from 'react-native';
+import {
+  TextInput,
+  type StyleProp,
+  type TextInputProps,
+  type TextStyle,
+} from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 import { styles } from './styles';
 
@@ -10,6 +15,8 @@ export type InputProps = Omit<TextInputProps, 'style'> & {
   /** Shows destructive border (e.g. validation); overrides focus primary until cleared */
   error?: boolean;
   disabled?: boolean;
+  /** Merged after base styles (e.g. multiline textarea height). */
+  style?: StyleProp<TextStyle>;
 };
 
 const Input = forwardRef<TextInput, InputProps>(function Input(
@@ -21,6 +28,7 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
     onFocus,
     onBlur,
     placeholderTextColor,
+    style,
     ...rest
   },
   ref,
@@ -56,6 +64,7 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
         showFocusRing && styles.focused,
         error && styles.error,
         disabled && styles.disabled,
+        style,
       ]}
       editable={isEditable}
       onFocus={handleFocus}

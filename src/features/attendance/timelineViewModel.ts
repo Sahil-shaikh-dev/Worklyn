@@ -214,6 +214,8 @@ export function buildTimelineRows(
 
     return {
       id: e.id,
+      eventType: e.type,
+      eventAt: e.at,
       kind: mapTypeToKind(e.type),
       dateHeading,
       timePrecise,

@@ -25,6 +25,11 @@ export { createAttendanceEventId } from './createAttendanceEventId';
 export { deriveSessionPhase } from './deriveSessionPhase';
 export { formatElapsedAsHms } from './formatElapsedHms';
 export {
+  deleteAttendanceEvent,
+  editAttendanceEventTime,
+  type EditAttendanceEventTimeResult,
+} from './mutateAttendanceEvents';
+export {
   getActiveWorkedMs,
   getCurrentPauseElapsedMs,
   getMainTimerDisplayMs,

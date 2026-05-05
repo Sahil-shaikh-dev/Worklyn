@@ -36,7 +36,7 @@ export const styles = StyleSheet.create(theme => ({
     opacity: 0.85,
   },
   avatarText: {
-    color: theme.colors.cardForeground,
+    color: theme.colors.primary,
     fontSize: theme.font.size.base,
     fontWeight: theme.font.weight.semibold,
   },

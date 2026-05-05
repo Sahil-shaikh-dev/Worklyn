@@ -1,7 +1,7 @@
 import { LogIn, LogOut, Pause, Play } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { memo } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 import { Card } from '../Card';
 import { styles } from './styles';
@@ -18,6 +18,7 @@ export type TimelineItemProps = Readonly<{
   isFirst: boolean;
   isLast: boolean;
   children?: ReactNode;
+  onLongPressCard?: () => void;
 }>;
 
 function iconForKind(kind: TimelineKind) {
@@ -33,25 +34,37 @@ function iconForKind(kind: TimelineKind) {
   }
 }
 
-function timelineNodeAppearance(
+function timelineKindAppearance(
   kind: TimelineKind,
   colors: { pauseForeground: string; primaryForeground: string },
 ) {
   switch (kind) {
     case 'pause':
       return {
-        nodeStyle: [styles.node, styles.nodePause],
+        cardStyle: [styles.timelineEntryCard, styles.timelineEntryCardPause],
         iconColor: colors.pauseForeground,
+        lineDownStyle: [styles.lineDown, styles.lineAccentPause],
+        lineUpStyle: [styles.lineUp, styles.lineAccentPause],
+        nodeStyle: [styles.node, styles.nodePause],
+        timeChipStyle: [styles.timeChip, styles.timeChipPause],
       };
     case 'resume':
       return {
-        nodeStyle: [styles.node, styles.nodeMuted],
+        cardStyle: [styles.timelineEntryCard, styles.timelineEntryCardResume],
         iconColor: colors.primaryForeground,
+        lineDownStyle: [styles.lineDown, styles.lineAccentResume],
+        lineUpStyle: [styles.lineUp, styles.lineAccentResume],
+        nodeStyle: [styles.node, styles.nodeMuted],
+        timeChipStyle: [styles.timeChip, styles.timeChipResume],
       };
     default:
       return {
-        nodeStyle: styles.node,
+        cardStyle: [styles.timelineEntryCard, styles.timelineEntryCardPrimary],
         iconColor: colors.primaryForeground,
+        lineDownStyle: styles.lineDown,
+        lineUpStyle: styles.lineUp,
+        nodeStyle: styles.node,
+        timeChipStyle: [styles.timeChip, styles.timeChipPrimary],
       };
   }
 }
@@ -66,10 +79,11 @@ function TimelineItemInner({
   isFirst,
   isLast,
   children,
+  onLongPressCard,
 }: TimelineItemProps) {
   const { theme } = useUnistyles();
   const Icon = iconForKind(kind);
-  const { nodeStyle, iconColor } = timelineNodeAppearance(kind, theme.colors);
+  const appearance = timelineKindAppearance(kind, theme.colors);
   const isPause = kind === 'pause';
 
   return (
@@ -78,54 +92,65 @@ function TimelineItemInner({
         {isFirst ? (
           <View style={styles.lineUpPlaceholder} />
         ) : (
-          <View style={styles.lineUp} />
+          <View style={appearance.lineUpStyle} />
         )}
-        <View style={nodeStyle}>
-          <Icon color={iconColor} size={18} strokeWidth={2.2} />
+        <View style={appearance.nodeStyle}>
+          <Icon color={appearance.iconColor} size={18} strokeWidth={2.2} />
         </View>
         {isLast ? (
           <View style={styles.lineDownPlaceholder} />
         ) : (
-          <View style={styles.lineDown} />
+          <View style={appearance.lineDownStyle} />
         )}
       </View>
       <View style={styles.contentColumn}>
-        <View style={styles.timeChip}>
+        <View style={appearance.timeChipStyle}>
           <Text style={styles.timePreciseChip}>{timePrecise}</Text>
         </View>
-        <Card style={styles.timelineEntryCard}>
-          {dateHeading === '' ? null : (
-            <Text style={styles.dateHeading}>{dateHeading}</Text>
-          )}
-          <Text
-            style={isPause ? [styles.title, styles.titlePause] : styles.title}
-          >
-            {title}
-          </Text>
-          {description != null && description !== '' ? (
+        <Pressable
+          delayLongPress={450}
+          disabled={onLongPressCard == null}
+          onLongPress={onLongPressCard}
+          style={({ pressed }) =>
+            onLongPressCard == null
+              ? styles.timelineCardPressable
+              : [styles.timelineCardPressable, pressed && styles.timelineCardPressed]
+          }
+        >
+          <Card style={appearance.cardStyle}>
+            {dateHeading === '' ? null : (
+              <Text style={styles.dateHeading}>{dateHeading}</Text>
+            )}
             <Text
-              style={
-                isPause
-                  ? [styles.description, styles.descriptionPause]
-                  : styles.description
-              }
+              style={isPause ? [styles.title, styles.titlePause] : styles.title}
             >
-              {description}
+              {title}
             </Text>
-          ) : null}
-          {metaLine != null && metaLine !== '' ? (
-            <Text
-              style={
-                isPause
-                  ? [styles.metaLine, styles.metaLinePause]
-                  : styles.metaLine
-              }
-            >
-              {metaLine}
-            </Text>
-          ) : null}
-          {children}
-        </Card>
+            {description != null && description !== '' ? (
+              <Text
+                style={
+                  isPause
+                    ? [styles.description, styles.descriptionPause]
+                    : styles.description
+                }
+              >
+                {description}
+              </Text>
+            ) : null}
+            {metaLine != null && metaLine !== '' ? (
+              <Text
+                style={
+                  isPause
+                    ? [styles.metaLine, styles.metaLinePause]
+                    : styles.metaLine
+                }
+              >
+                {metaLine}
+              </Text>
+            ) : null}
+            {children}
+          </Card>
+        </Pressable>
       </View>
     </View>
   );

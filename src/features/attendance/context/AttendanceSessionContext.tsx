@@ -10,8 +10,10 @@ import {
 } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import {
+  getAttendanceHistoryDay,
   mirrorLiveSessionToHistoryIfToday,
   resolveLiveSnapshotWithArchive,
+  upsertAttendanceHistoryDay,
 } from '../history';
 import type {
   AttendanceAction,
@@ -26,6 +28,12 @@ import {
 } from '../session/attendanceSessionStorage';
 import { deriveSessionPhase } from '../session/deriveSessionPhase';
 import { formatElapsedAsHms } from '../session/formatElapsedHms';
+import { getLocalCalendarDayKey } from '../session/localCalendarDayKey';
+import {
+  deleteAttendanceEvent,
+  editAttendanceEventTime,
+} from '../session/mutateAttendanceEvents';
+import { sortAttendanceEvents } from '../session/sortAttendanceEvents';
 import {
   getActiveWorkedMs,
   getCurrentPauseElapsedMs,
@@ -37,6 +45,35 @@ const emptySnapshot = (): AttendanceSessionSnapshot => ({
   updatedAt: new Date(0),
   businessDayKey: null,
 });
+
+function eventsEqualByIdentityAndTime(
+  a: readonly AttendanceEvent[],
+  b: readonly AttendanceEvent[],
+): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i].id !== b[i].id || a[i].at.getTime() !== b[i].at.getTime()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function deriveBusinessDayKeyFromEvents(
+  events: readonly AttendanceEvent[],
+): string | null {
+  if (events.length === 0) {
+    return null;
+  }
+  const sorted = sortAttendanceEvents(events);
+  const firstClockIn = sorted.find(event => event.type === 'clock_in');
+  if (firstClockIn != null) {
+    return getLocalCalendarDayKey(firstClockIn.at);
+  }
+  return getLocalCalendarDayKey(sorted[0].at);
+}
 
 type AttendanceSessionContextValue = Readonly<{
   events: AttendanceEvent[];
@@ -52,13 +89,21 @@ type AttendanceSessionContextValue = Readonly<{
   startPause: () => void;
   resumeFromPause: () => void;
   clockOut: () => void;
+  editTimelineEntryTime: (
+    dayKey: string,
+    eventId: string,
+    nextAt: Date,
+  ) => Promise<Readonly<{ ok: boolean; message?: string }>>;
+  deleteTimelineEntry: (dayKey: string, eventId: string) => Promise<void>;
 }>;
 
 const AttendanceSessionContext = createContext<AttendanceSessionContextValue | null>(
   null,
 );
 
-export function AttendanceSessionProvider({ children }: { children: ReactNode }) {
+export function AttendanceSessionProvider({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   const [snapshot, setSnapshot] = useState<AttendanceSessionSnapshot>(emptySnapshot);
   const [now, setNow] = useState(() => new Date());
   const hydratedRef = useRef(false);
@@ -162,6 +207,94 @@ export function AttendanceSessionProvider({ children }: { children: ReactNode })
     });
   }, []);
 
+  const editTimelineEntryTime = useCallback(
+    async (dayKey: string, eventId: string, nextAt: Date) => {
+      const mutationAt = new Date();
+      const todayKey = getLocalCalendarDayKey(mutationAt);
+      if (dayKey === todayKey) {
+        const prev = snapshotRef.current;
+        const result = editAttendanceEventTime(prev.events, eventId, nextAt);
+        if (!result.ok) {
+          return { ok: false, message: result.message };
+        }
+        const nextEvents = result.events;
+        if (eventsEqualByIdentityAndTime(nextEvents, prev.events)) {
+          return { ok: true };
+        }
+        const nextSnapshot: AttendanceSessionSnapshot = {
+          ...prev,
+          events: nextEvents,
+          updatedAt: mutationAt,
+          businessDayKey: deriveBusinessDayKeyFromEvents(nextEvents),
+        };
+        setSnapshot(nextSnapshot);
+        snapshotRef.current = nextSnapshot;
+        await saveAttendanceSession(nextSnapshot).catch(err => {
+          console.error('AttendanceSession: save after edit failed', err);
+        });
+        await mirrorLiveSessionToHistoryIfToday(nextSnapshot, mutationAt).catch(err => {
+          console.error('AttendanceSession: mirror history after edit failed', err);
+        });
+        return { ok: true };
+      }
+
+      const existing = await getAttendanceHistoryDay(dayKey, mutationAt);
+      if (existing.length === 0) {
+        return { ok: false, message: 'No entries found for this day.' };
+      }
+      const result = editAttendanceEventTime(existing, eventId, nextAt);
+      if (!result.ok) {
+        return { ok: false, message: result.message };
+      }
+      const nextEvents = result.events;
+      await upsertAttendanceHistoryDay(dayKey, nextEvents, mutationAt, mutationAt).catch(
+        err => {
+          console.error('AttendanceSession: history upsert after edit failed', err);
+        },
+      );
+      return { ok: true };
+    },
+    [],
+  );
+
+  const deleteTimelineEntry = useCallback(async (dayKey: string, eventId: string) => {
+    const mutationAt = new Date();
+    const todayKey = getLocalCalendarDayKey(mutationAt);
+    if (dayKey === todayKey) {
+      const prev = snapshotRef.current;
+      const nextEvents = deleteAttendanceEvent(prev.events, eventId);
+      if (eventsEqualByIdentityAndTime(nextEvents, prev.events)) {
+        return;
+      }
+      const nextSnapshot: AttendanceSessionSnapshot = {
+        ...prev,
+        events: nextEvents,
+        updatedAt: mutationAt,
+        businessDayKey: deriveBusinessDayKeyFromEvents(nextEvents),
+      };
+      setSnapshot(nextSnapshot);
+      snapshotRef.current = nextSnapshot;
+      await saveAttendanceSession(nextSnapshot).catch(err => {
+        console.error('AttendanceSession: save after delete failed', err);
+      });
+      await mirrorLiveSessionToHistoryIfToday(nextSnapshot, mutationAt).catch(err => {
+        console.error('AttendanceSession: mirror history after delete failed', err);
+      });
+      return;
+    }
+
+    const existing = await getAttendanceHistoryDay(dayKey, mutationAt);
+    if (existing.length === 0) {
+      return;
+    }
+    const nextEvents = deleteAttendanceEvent(existing, eventId);
+    await upsertAttendanceHistoryDay(dayKey, nextEvents, mutationAt, mutationAt).catch(
+      err => {
+        console.error('AttendanceSession: history upsert after delete failed', err);
+      },
+    );
+  }, []);
+
   const clockIn = useCallback(() => apply({ type: 'clock_in' }), [apply]);
   const startPause = useCallback(() => apply({ type: 'start_pause' }), [apply]);
   const resumeFromPause = useCallback(() => apply({ type: 'end_pause' }), [apply]);
@@ -218,6 +351,8 @@ export function AttendanceSessionProvider({ children }: { children: ReactNode })
       startPause,
       resumeFromPause,
       clockOut,
+      editTimelineEntryTime,
+      deleteTimelineEntry,
     };
   }, [
     snapshot,
@@ -226,6 +361,8 @@ export function AttendanceSessionProvider({ children }: { children: ReactNode })
     startPause,
     resumeFromPause,
     clockOut,
+    editTimelineEntryTime,
+    deleteTimelineEntry,
     reconcileCalendarDay,
   ]);
 

@@ -8,6 +8,8 @@ export type AttendanceEvent =
 
 export type TimelineListRow = Readonly<{
   id: string;
+  eventType: AttendanceEvent['type'];
+  eventAt: Date;
   kind: TimelineKind;
   dateHeading: string;
   timePrecise: string;

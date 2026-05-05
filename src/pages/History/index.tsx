@@ -6,7 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronRight, History as HistoryIcon } from 'lucide-react-native';
 import { useUnistyles } from 'react-native-unistyles';
 import { TimelineItem } from '../../components/ui';
 import {
@@ -98,9 +98,35 @@ function HistoryScreen() {
 
   const keyExtractor = useCallback((item: TimelineListRow) => item.id, []);
 
-  const listHeader = useMemo(
+  const listEmpty = useMemo(
     () => (
-      <View style={styles.listHeader}>
+      <View style={styles.emptyTimeline}>
+        <View style={styles.emptyTimelineIconWrap}>
+          <HistoryIcon
+            color={theme.colors.mutedForeground}
+            size={26}
+            strokeWidth={2}
+          />
+        </View>
+        <Text style={styles.emptyTimelineTitle}>No attendance for this day</Text>
+        <Text style={styles.emptyTimelineSubtitle}>
+          Clock in or record time for this date to see your timeline here, newest
+          first.
+        </Text>
+      </View>
+    ),
+    [theme.colors.mutedForeground],
+  );
+
+  const listContentStyle = useMemo(
+    () =>
+      timelineData.length === 0 ? styles.listContentEmpty : styles.listContent,
+    [timelineData.length],
+  );
+
+  const dateAndStripPinned = useMemo(
+    () => (
+      <View style={styles.dateAndStripPinned}>
         <View style={styles.stripHeaderRow}>
           <Text
             ellipsizeMode="tail"
@@ -136,16 +162,10 @@ function HistoryScreen() {
           onSelectDayKey={handleSelectDayKey}
           selectedDayKey={selectedDayKey}
         />
-        <HistoryShiftSummaryCards
-          asOf={historyPayload.asOf}
-          events={historyPayload.events}
-        />
       </View>
     ),
     [
       handleBackToToday,
-      historyPayload.asOf,
-      historyPayload.events,
       handleSelectDayKey,
       selectedDateHeading,
       selectedDayKey,
@@ -155,24 +175,35 @@ function HistoryScreen() {
     ],
   );
 
+  const scrollListHeader = useMemo(
+    () => (
+      <View style={styles.scrollListHeader}>
+        <HistoryShiftSummaryCards
+          asOf={historyPayload.asOf}
+          events={historyPayload.events}
+        />
+      </View>
+    ),
+    [historyPayload.asOf, historyPayload.events],
+  );
+
   return (
     <View style={styles.container}>
-      <FlatList
-        contentContainerStyle={styles.listContent}
-        data={timelineData}
-        extraData={session.now.getTime()}
-        keyExtractor={keyExtractor}
-        keyboardShouldPersistTaps="handled"
-        ListHeaderComponent={listHeader}
-        ListEmptyComponent={
-          <Text style={styles.emptyTimeline}>
-            No attendance for this day.
-          </Text>
-        }
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-        style={styles.timelineList}
-      />
+      <View style={styles.body}>
+        {dateAndStripPinned}
+        <FlatList
+          contentContainerStyle={listContentStyle}
+          data={timelineData}
+          extraData={session.now.getTime()}
+          keyExtractor={keyExtractor}
+          keyboardShouldPersistTaps="handled"
+          ListHeaderComponent={scrollListHeader}
+          ListEmptyComponent={listEmpty}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+          style={styles.timelineList}
+        />
+      </View>
     </View>
   );
 }
