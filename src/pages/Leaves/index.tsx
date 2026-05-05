@@ -1,6 +1,10 @@
 import { CalendarX, Plus } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import Animated, {
+  FadeIn,
+  useReducedMotion,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUnistyles } from 'react-native-unistyles';
 import { getLocalCalendarDayKey } from '../../features/attendance/session/localCalendarDayKey';
@@ -74,6 +78,7 @@ function LeavesScreen() {
   );
   const [leaveEntryForActions, setLeaveEntryForActions] =
     useState<LeaveEntry | null>(null);
+  const reducedMotion = useReducedMotion();
 
   /**
    * Tab screens are already laid out above the tab bar; do not add tab bar
@@ -160,7 +165,7 @@ function LeavesScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.summaryBlock}>
+      <Animated.View entering={FadeIn.duration(reducedMotion ? 120 : 220)} style={styles.summaryBlock}>
         <View style={styles.summaryGrid}>
           <View style={styles.summaryRow}>
             <View style={styles.summaryCell}>
@@ -207,9 +212,9 @@ function LeavesScreen() {
             </View>
           </View>
         </View>
-      </View>
+      </Animated.View>
 
-      <ScrollView
+      <Animated.ScrollView
         contentContainerStyle={styles.timelineScrollContent}
         showsVerticalScrollIndicator={false}
         style={styles.timelineScroll}>
@@ -251,7 +256,7 @@ function LeavesScreen() {
             })
           )}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       <Pressable
         accessibilityLabel="Add leave"

@@ -145,7 +145,7 @@ function WheelColumnInner<T extends string | number>({
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="adjustable"
         data={values}
-        decelerationRate="fast"
+        decelerationRate="normal"
         getItemLayout={(_, index) => ({
           length: ITEM_HEIGHT,
           offset: ITEM_HEIGHT * index,
@@ -154,12 +154,10 @@ function WheelColumnInner<T extends string | number>({
         initialNumToRender={12}
         keyExtractor={String}
         onMomentumScrollEnd={settleAtNearestIndex}
-        onScrollEndDrag={settleAtNearestIndex}
         ref={listRef}
         renderItem={renderItem}
         scrollEnabled={!disabled}
         showsVerticalScrollIndicator={false}
-        disableIntervalMomentum
         snapToAlignment="start"
         snapToInterval={ITEM_HEIGHT}
         style={[styles.wheelList, disabled && styles.wheelDisabled]}

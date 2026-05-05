@@ -11,6 +11,14 @@ import {
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import type { DateData } from 'react-native-calendars';
+import Animated, {
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 import { Button, Card, Input } from '../../../../components/ui';
 import {
@@ -25,6 +33,7 @@ import {
 import { styles } from './styles';
 
 const CUSTOM_REASON = '__custom__' as const;
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export const PREDEFINED_LEAVE_REASONS = [
   'Vacation',
@@ -86,7 +95,45 @@ export function AddLeaveEntryModal({
   const [customReason, setCustomReason] = useState('');
   const [customTouched, setCustomTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(visible);
   const bodyScrollRef = useRef<ScrollView>(null);
+  const reducedMotion = useReducedMotion();
+  const visibility = useSharedValue(visible ? 1 : 0);
+
+  const hideModalOnJsThread = useCallback(() => {
+    setMounted(false);
+  }, []);
+
+  useEffect(() => {
+    if (visible) {
+      setMounted(true);
+      visibility.value = withTiming(1, {
+        duration: reducedMotion ? 100 : 220,
+      });
+      return;
+    }
+    visibility.value = withTiming(
+      0,
+      { duration: reducedMotion ? 90 : 170 },
+      finished => {
+        if (finished) {
+          runOnJS(hideModalOnJsThread)();
+        }
+      },
+    );
+  }, [hideModalOnJsThread, reducedMotion, visibility, visible]);
+
+  const backdropAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(visibility.value, [0, 1], [0, 1]),
+  }));
+
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: visibility.value,
+    transform: [
+      { translateY: interpolate(visibility.value, [0, 1], [18, 0]) },
+      { scale: interpolate(visibility.value, [0, 1], [0.98, 1]) },
+    ],
+  }));
 
   useEffect(() => {
     if (visible) {
@@ -223,23 +270,23 @@ export function AddLeaveEntryModal({
 
   return (
     <Modal
-      animationType="fade"
+      animationType="none"
       onRequestClose={onRequestDismiss}
       transparent
-      visible={visible}>
+      visible={mounted}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardRoot}>
         <View style={styles.overlay}>
-          <Pressable
+          <AnimatedPressable
             accessibilityLabel="Dismiss"
             accessibilityRole="button"
             onPress={onRequestDismiss}
-            style={styles.backdrop}
+            style={[styles.backdrop, backdropAnimatedStyle]}
           />
-          <View
+          <Animated.View
             pointerEvents="box-none"
-            style={[styles.modalCardShell, { height: modalShellHeight }]}>
+            style={[styles.modalCardShell, { height: modalShellHeight }, cardAnimatedStyle]}>
             <Card
               style={styles.modalCard}
               title={editingEntry == null ? 'Add leave' : 'Edit leave'}>
@@ -384,7 +431,7 @@ export function AddLeaveEntryModal({
                 </Button>
               </View>
             </Card>
-          </View>
+          </Animated.View>
         </View>
       </KeyboardAvoidingView>
     </Modal>

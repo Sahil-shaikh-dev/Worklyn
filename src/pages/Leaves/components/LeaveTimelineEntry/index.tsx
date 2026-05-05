@@ -1,9 +1,23 @@
 import { Calendar, Clock } from 'lucide-react-native';
 import { memo } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 import { Card } from '../../../../components/ui';
+import {
+  animatePress,
+  listItemEnter,
+  listItemExit,
+  listLayoutTransition,
+  subtleScale,
+} from '../../../../theme/motion';
 import { styles } from './styles';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export type LeaveTimelineEntryProps = Readonly<{
   dateChip: string;
@@ -36,6 +50,11 @@ function LeaveTimelineEntryInner({
   onLongPressCard,
 }: LeaveTimelineEntryProps) {
   const { theme } = useUnistyles();
+  const reducedMotion = useReducedMotion();
+  const pressProgress = useSharedValue(0);
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: subtleScale(pressProgress) }],
+  }));
   const nodeStyle =
     variant === 'half' ? [styles.node, styles.nodeHalf] : styles.node;
   const lineUpStyle =
@@ -54,7 +73,11 @@ function LeaveTimelineEntryInner({
       : [styles.timelineEntryCard, styles.timelineEntryCardFull];
 
   return (
-    <View style={styles.row}>
+    <Animated.View
+      entering={listItemEnter(reducedMotion)}
+      exiting={listItemExit(reducedMotion)}
+      layout={listLayoutTransition}
+      style={styles.row}>
       <View style={styles.track}>
         {isFirst ? (
           <View style={styles.lineUpPlaceholder} />
@@ -78,13 +101,16 @@ function LeaveTimelineEntryInner({
         <View style={dateChipStyle}>
           <Text style={styles.dateChipText}>{dateChip}</Text>
         </View>
-        <Pressable
+        <AnimatedPressable
           accessibilityHint="Opens actions to edit or delete this leave"
           accessibilityRole="button"
           delayLongPress={450}
           disabled={onLongPressCard == null}
           onLongPress={onLongPressCard}
+          onPressIn={() => animatePress(pressProgress, true, reducedMotion)}
+          onPressOut={() => animatePress(pressProgress, false, reducedMotion)}
           style={({ pressed }) => [
+            cardAnimatedStyle,
             onLongPressCard != null && pressed ? styles.cardPressablePressed : null,
           ]}>
           <Card style={cardStyle}>
@@ -107,9 +133,9 @@ function LeaveTimelineEntryInner({
               </View>
             ) : null}
           </Card>
-        </Pressable>
+        </AnimatedPressable>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 

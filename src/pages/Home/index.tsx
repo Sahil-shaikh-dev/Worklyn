@@ -1,6 +1,7 @@
 import { Clock } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, type ListRenderItemInfo, Text, View } from 'react-native';
+import { type ListRenderItemInfo, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 import { TimelineItem } from '../../components/ui';
 import {
@@ -15,7 +16,10 @@ import { AttendanceTimelineEntryActionsModal } from '../../features/attendance/c
 import { AttendanceTimelineTimeEditModal } from '../../features/attendance/components/AttendanceTimelineTimeEditModal';
 import { HistoryShiftSummaryCards } from '../History/components/HistoryShiftSummaryCards';
 import { CheckInStatusCard } from './components/CheckInStatusCard';
+import { listLayoutTransition } from '../../theme/motion';
 import { styles } from './styles';
+
+const AnimatedFlatList = Animated.FlatList<TimelineListRow>;
 
 function Home() {
   const { theme } = useUnistyles();
@@ -150,10 +154,11 @@ function Home() {
             statusMessage={session.statusMessage}
           />
         </View>
-        <FlatList
+        <AnimatedFlatList
           contentContainerStyle={listContentStyle}
           data={timelineData}
           extraData={session.now.getTime()}
+          itemLayoutAnimation={listLayoutTransition}
           keyExtractor={keyExtractor}
           keyboardShouldPersistTaps="handled"
           ListEmptyComponent={listEmpty}

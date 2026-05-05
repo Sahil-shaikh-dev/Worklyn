@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  FlatList,
   type ListRenderItemInfo,
   Pressable,
   Text,
   View,
 } from 'react-native';
 import { ChevronRight, History as HistoryIcon } from 'lucide-react-native';
+import Animated from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 import { TimelineItem } from '../../components/ui';
 import {
@@ -24,6 +24,9 @@ import { styles } from './styles';
 import { useAttendanceHistoryForSelection } from './useAttendanceHistoryForSelection';
 import { buildDayStripItems } from './utils/calendarRange';
 import { formatHistorySelectedDateLabel } from './utils/formatHistorySelectedDateLabel';
+import { listLayoutTransition } from '../../theme/motion';
+
+const AnimatedFlatList = Animated.FlatList<TimelineListRow>;
 
 function HistoryScreen() {
   const { theme } = useUnistyles();
@@ -191,10 +194,11 @@ function HistoryScreen() {
     <View style={styles.container}>
       <View style={styles.body}>
         {dateAndStripPinned}
-        <FlatList
+        <AnimatedFlatList
           contentContainerStyle={listContentStyle}
           data={timelineData}
           extraData={session.now.getTime()}
+          itemLayoutAnimation={listLayoutTransition}
           keyExtractor={keyExtractor}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={scrollListHeader}

@@ -2,6 +2,7 @@ import { Button, Card } from '../../../../components/ui';
 import type { SessionPhase } from '../../../../features/attendance';
 import { LogOut, Pause, Play } from 'lucide-react-native';
 import { Text, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, useReducedMotion } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 import { styles } from './styles';
 
@@ -30,6 +31,7 @@ export function CheckInStatusCard({
   onClockOut,
 }: CheckInStatusCardProps) {
   const { theme } = useUnistyles();
+  const reducedMotion = useReducedMotion();
   const showDate = sessionDateLabel != null && sessionDateLabel.trim() !== '';
   const showBreakTimer =
     breakTimerHms != null && breakTimerHms !== '' && sessionPhase === 'paused';
@@ -65,7 +67,10 @@ export function CheckInStatusCard({
         ) : null}
 
         {sessionPhase === 'idle' ? (
-          <View style={styles.actionsSingle}>
+          <Animated.View
+            entering={FadeIn.duration(reducedMotion ? 110 : 200)}
+            exiting={FadeOut.duration(reducedMotion ? 90 : 150)}
+            style={styles.actionsSingle}>
             <Button
               accessibilityLabel="Clock in"
               onPress={onClockIn}
@@ -81,11 +86,14 @@ export function CheckInStatusCard({
                 <Text style={styles.clockInLabel}>Clock In</Text>
               </View>
             </Button>
-          </View>
+          </Animated.View>
         ) : null}
 
         {sessionPhase === 'working' ? (
-          <View style={styles.actionsRow}>
+          <Animated.View
+            entering={FadeIn.duration(reducedMotion ? 110 : 200)}
+            exiting={FadeOut.duration(reducedMotion ? 90 : 150)}
+            style={styles.actionsRow}>
             <Button
               accessibilityLabel="Clock out"
               onPress={onClockOut}
@@ -116,11 +124,14 @@ export function CheckInStatusCard({
                 <Text style={styles.pauseLabel}>Pause</Text>
               </View>
             </Button>
-          </View>
+          </Animated.View>
         ) : null}
 
         {sessionPhase === 'paused' ? (
-          <View style={styles.actionsSingle}>
+          <Animated.View
+            entering={FadeIn.duration(reducedMotion ? 110 : 200)}
+            exiting={FadeOut.duration(reducedMotion ? 90 : 150)}
+            style={styles.actionsSingle}>
             <Button
               accessibilityLabel="Resume work timer"
               onPress={onResumeFromPause}
@@ -136,7 +147,7 @@ export function CheckInStatusCard({
                 <Text style={styles.clockInLabel}>Resume</Text>
               </View>
             </Button>
-          </View>
+          </Animated.View>
         ) : null}
       </View>
     </Card>

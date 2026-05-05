@@ -2,9 +2,22 @@ import { LogIn, LogOut, Pause, Play } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { memo } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
+import {
+  animatePress,
+  listItemEnter,
+  listItemExit,
+  listLayoutTransition,
+  subtleScale,
+} from '../../../theme/motion';
 import { Card } from '../Card';
 import { styles } from './styles';
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export type TimelineKind = 'clock_in' | 'pause' | 'resume' | 'clock_out';
 
@@ -82,12 +95,21 @@ function TimelineItemInner({
   onLongPressCard,
 }: TimelineItemProps) {
   const { theme } = useUnistyles();
+  const reducedMotion = useReducedMotion();
+  const pressProgress = useSharedValue(0);
+  const animatedPressStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: subtleScale(pressProgress) }],
+  }));
   const Icon = iconForKind(kind);
   const appearance = timelineKindAppearance(kind, theme.colors);
   const isPause = kind === 'pause';
 
   return (
-    <View style={styles.row}>
+    <Animated.View
+      entering={listItemEnter(reducedMotion)}
+      exiting={listItemExit(reducedMotion)}
+      layout={listLayoutTransition}
+      style={styles.row}>
       <View style={styles.track}>
         {isFirst ? (
           <View style={styles.lineUpPlaceholder} />
@@ -107,14 +129,20 @@ function TimelineItemInner({
         <View style={appearance.timeChipStyle}>
           <Text style={styles.timePreciseChip}>{timePrecise}</Text>
         </View>
-        <Pressable
+        <AnimatedPressable
           delayLongPress={450}
           disabled={onLongPressCard == null}
           onLongPress={onLongPressCard}
+          onPressIn={() => animatePress(pressProgress, true, reducedMotion)}
+          onPressOut={() => animatePress(pressProgress, false, reducedMotion)}
           style={({ pressed }) =>
             onLongPressCard == null
-              ? styles.timelineCardPressable
-              : [styles.timelineCardPressable, pressed && styles.timelineCardPressed]
+              ? [styles.timelineCardPressable, animatedPressStyle]
+              : [
+                  styles.timelineCardPressable,
+                  animatedPressStyle,
+                  pressed && styles.timelineCardPressed,
+                ]
           }
         >
           <Card style={appearance.cardStyle}>
@@ -150,9 +178,9 @@ function TimelineItemInner({
             ) : null}
             {children}
           </Card>
-        </Pressable>
+        </AnimatedPressable>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 

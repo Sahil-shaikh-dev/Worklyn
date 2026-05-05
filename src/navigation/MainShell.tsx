@@ -25,15 +25,15 @@ type TabBarIconProps = Readonly<{
 }>;
 
 function HomeTabBarIcon({ color, size }: TabBarIconProps) {
-  return <HomeIcon color={color} size={size} />;
+  return <HomeIcon color={color} size={size} strokeWidth={2.2} />;
 }
 
 function HistoryTabBarIcon({ color, size }: TabBarIconProps) {
-  return <HistoryIcon color={color} size={size} />;
+  return <HistoryIcon color={color} size={size} strokeWidth={2.2} />;
 }
 
 function LeavesTabBarIcon({ color, size }: TabBarIconProps) {
-  return <Calendar color={color} size={size} />;
+  return <Calendar color={color} size={size} strokeWidth={2.2} />;
 }
 
 export function MainShell() {
@@ -58,14 +58,14 @@ export function MainShell() {
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
+          animation: 'none',
           tabBarActiveTintColor: theme.colors.primary,
           tabBarInactiveTintColor: theme.colors.mutedForeground,
           tabBarStyle: {
             backgroundColor: theme.colors.card,
             borderTopColor: theme.colors.border,
           },
-        }}
-      >
+        }}>
         <Tab.Screen
           component={HomeScreen}
           name="Home"

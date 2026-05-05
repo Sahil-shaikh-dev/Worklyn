@@ -7,3 +7,4 @@ export {
   fontWeight,
   lineHeight,
 } from './tokens/typography';
+export { motionDuration, motionEasing } from './motion';
