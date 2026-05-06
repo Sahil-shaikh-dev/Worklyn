@@ -74,6 +74,7 @@ export const styles = StyleSheet.create(theme => ({
   /** Matches Leaves empty timeline placeholder (dashed card + icon chip + title/subtitle). */
   emptyTimeline: {
     minHeight: 200,
+    flexGrow: 1,
     alignSelf: 'stretch',
     justifyContent: 'center',
     alignItems: 'center',

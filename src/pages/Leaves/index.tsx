@@ -1,5 +1,5 @@
 import { CalendarX, Plus } from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, {
   FadeIn,
@@ -19,6 +19,7 @@ import {
   sumUsedFromEntries,
   type LeaveBalanceBaseline,
 } from './leaveBalanceMath';
+import { loadLeavesSnapshot, saveLeavesSnapshot } from './leaveStorage';
 import {
   formatLeaveDateChip,
   formatLeaveDateHeading,
@@ -46,12 +47,18 @@ function LeavesScreen() {
   const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
   const [accrualStartMonth] = useState(() => new Date());
-  const initialAccrualTotal = getMonthlyAccrualTotalFromMonth(
-    accrualStartMonth,
-    accrualStartMonth,
-  );
-
   const [leaveEntries, setLeaveEntries] = useState<LeaveEntry[]>([]);
+  const [loadedAccrualStartMonth, setLoadedAccrualStartMonth] = useState<Date>(
+    () => new Date(),
+  );
+  const [manualBaseline, setManualBaseline] = useState<LeaveBalanceBaseline>({
+    remaining: 0,
+    used: 0,
+    entryUsedAtSet: 0,
+    accrualAtSet: 0,
+  });
+  const hydratedRef = useRef(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const rows = useMemo(
     () =>
       [...leaveEntries].sort((a, b) => b.at.getTime() - a.at.getTime()),
@@ -60,13 +67,7 @@ function LeavesScreen() {
   const n = rows.length;
 
   const entryUsedTotal = useMemo(() => sumUsedFromEntries(leaveEntries), [leaveEntries]);
-  const accrualTotal = getMonthlyAccrualTotalFromMonth(accrualStartMonth, new Date());
-  const [manualBaseline, setManualBaseline] = useState<LeaveBalanceBaseline>(() => ({
-    remaining: 0,
-    used: 0,
-    entryUsedAtSet: 0,
-    accrualAtSet: initialAccrualTotal,
-  }));
+  const accrualTotal = getMonthlyAccrualTotalFromMonth(loadedAccrualStartMonth, new Date());
   const { remaining: remainingLeaves, used: usedLeaves } = useMemo(
     () => deriveLeaveBalances(manualBaseline, entryUsedTotal, accrualTotal),
     [manualBaseline, entryUsedTotal, accrualTotal],
@@ -80,6 +81,41 @@ function LeavesScreen() {
     useState<LeaveEntry | null>(null);
   const reducedMotion = useReducedMotion();
 
+  useEffect(() => {
+    let alive = true;
+
+    const hydrate = async () => {
+      const snapshot = await loadLeavesSnapshot(accrualStartMonth);
+      if (!alive) {
+        return;
+      }
+
+      setLoadedAccrualStartMonth(snapshot.accrualStartMonth);
+      setLeaveEntries(snapshot.leaveEntries);
+      setManualBaseline(snapshot.manualBaseline);
+      hydratedRef.current = true;
+      setIsHydrated(true);
+    };
+
+    hydrate();
+
+    return () => {
+      alive = false;
+    };
+  }, [accrualStartMonth]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) {
+      return;
+    }
+
+    void saveLeavesSnapshot({
+      accrualStartMonth: loadedAccrualStartMonth,
+      manualBaseline,
+      leaveEntries,
+    });
+  }, [leaveEntries, loadedAccrualStartMonth, manualBaseline]);
+
   /**
    * Tab screens are already laid out above the tab bar; do not add tab bar
    * height here or the FAB and scroll padding sit too high.
@@ -88,8 +124,11 @@ function LeavesScreen() {
   const fabRight = theme.spacing[4] + insets.right;
 
   const openBalancesModal = useCallback(() => {
+    if (!isHydrated) {
+      return;
+    }
     setBalancesModalVisible(true);
-  }, []);
+  }, [isHydrated]);
 
   const handleBalancesSave = useCallback(
     async (values: { remaining: number; used: number }) => {
@@ -104,9 +143,12 @@ function LeavesScreen() {
   }, []);
 
   const openAddLeaveModal = useCallback(() => {
+    if (!isHydrated) {
+      return;
+    }
     setEditingLeaveEntry(null);
     setAddLeaveModalVisible(true);
-  }, []);
+  }, [isHydrated]);
 
   const dismissAddLeaveModal = useCallback(() => {
     setEditingLeaveEntry(null);
@@ -114,9 +156,12 @@ function LeavesScreen() {
   }, []);
 
   const openEditLeaveModal = useCallback((entry: LeaveEntry) => {
+    if (!isHydrated) {
+      return;
+    }
     setEditingLeaveEntry(entry);
     setAddLeaveModalVisible(true);
-  }, []);
+  }, [isHydrated]);
 
   const confirmDeleteLeave = useCallback((entry: LeaveEntry) => {
     setLeaveEntries(prev => prev.filter(e => e.id !== entry.id));
@@ -246,7 +291,12 @@ function LeavesScreen() {
                   dateHeading={formatLeaveDateHeading(row.at)}
                   isFirst={index === 0}
                   isLast={index === n - 1}
-                  onLongPressCard={() => setLeaveEntryForActions(row)}
+                  onLongPressCard={() => {
+                    if (!isHydrated) {
+                      return;
+                    }
+                    setLeaveEntryForActions(row);
+                  }}
                   reason={row.reason}
                   title={copy.title}
                   titleSuffix={copy.titleSuffix}
@@ -263,14 +313,20 @@ function LeavesScreen() {
         accessibilityRole="button"
         hitSlop={12}
         onPress={openAddLeaveModal}
-        style={({ pressed }) => [
-          styles.fab,
-          {
-            bottom: fabBottom,
-            right: fabRight,
-            opacity: pressed ? 0.92 : 1,
-          },
-        ]}>
+        style={({ pressed }) => {
+          let opacity = 0.6;
+          if (isHydrated) {
+            opacity = pressed ? 0.92 : 1;
+          }
+          return [
+            styles.fab,
+            {
+              bottom: fabBottom,
+              right: fabRight,
+              opacity,
+            },
+          ];
+        }}>
         <Plus color={theme.colors.primaryForeground} size={28} strokeWidth={2.4} />
       </Pressable>
 
