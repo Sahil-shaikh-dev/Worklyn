@@ -38,6 +38,24 @@ export const styles = StyleSheet.create(theme => ({
       ? { fontFamily: 'Menlo' }
       : { fontFamily: 'monospace' }),
   },
+  estimatedClockOut: {
+    alignSelf: 'center',
+    color: theme.colors.mutedForeground,
+    fontSize: theme.font.size.sm,
+    fontWeight: theme.font.weight.medium,
+    lineHeight: theme.font.lineHeight.sm,
+    fontVariant: ['tabular-nums'],
+    textAlign: 'center',
+  },
+  clockOutReadyText: {
+    alignSelf: 'center',
+    color: theme.colors.destructive,
+    fontSize: theme.font.size.sm,
+    fontWeight: theme.font.weight.semibold,
+    lineHeight: theme.font.lineHeight.sm,
+    fontVariant: ['tabular-nums'],
+    textAlign: 'center',
+  },
   /** On-break copy: same scale as former status line (`statusMessage`); pure gold. */
   breakTimerGold: {
     alignSelf: 'center',
@@ -58,6 +76,22 @@ export const styles = StyleSheet.create(theme => ({
     fontWeight: theme.font.weight.normal,
     lineHeight: theme.font.lineHeight.base,
     textAlign: 'center',
+  },
+  /**
+   * Cross-fade wrapper: phase action layers overlap absolutely so
+   * exiting/entering buttons don't push each other in the column gap.
+   * minHeight matches Button hit target so the card doesn't collapse.
+   */
+  actionsContainer: {
+    position: 'relative',
+    alignSelf: 'stretch',
+    minHeight: 44,
+  },
+  actionsLayer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
   },
   actionsRow: {
     flexDirection: 'row',

@@ -149,3 +149,71 @@ export function getMainTimerDisplayMs(
 ): number {
   return getActiveWorkedMs(events, now);
 }
+
+/**
+ * Returns the timestamp when cumulative active work first reaches `targetWorkMs`.
+ * If target is not reached by `asOf`, returns null.
+ */
+export function getWorkTargetReachedAt(
+  events: readonly AttendanceEvent[],
+  asOf: Date,
+  targetWorkMs: number,
+): Date | null {
+  if (targetWorkMs <= 0) {
+    return new Date(asOf);
+  }
+
+  const sorted = sortAttendanceEvents(events).filter(e => e.at.getTime() <= asOf.getTime());
+  let totalActiveMs = 0;
+  let activeSliceStartMs: number | null = null;
+
+  const pushActiveSliceUntil = (sliceEndMs: number): Date | null => {
+    if (activeSliceStartMs == null) {
+      return null;
+    }
+    const sliceMs = Math.max(0, sliceEndMs - activeSliceStartMs);
+    if (sliceMs === 0) {
+      activeSliceStartMs = sliceEndMs;
+      return null;
+    }
+    if (totalActiveMs + sliceMs >= targetWorkMs) {
+      const remainingMs = targetWorkMs - totalActiveMs;
+      return new Date(activeSliceStartMs + remainingMs);
+    }
+    totalActiveMs += sliceMs;
+    activeSliceStartMs = sliceEndMs;
+    return null;
+  };
+
+  const closeActiveSlice = (sliceEndMs: number): Date | null => {
+    const reachedAt = pushActiveSliceUntil(sliceEndMs);
+    activeSliceStartMs = null;
+    return reachedAt;
+  };
+
+  for (const event of sorted) {
+    const eventMs = event.at.getTime();
+    switch (event.type) {
+      case 'clock_in':
+      case 'pause_ended':
+        activeSliceStartMs = eventMs;
+        break;
+      case 'pause_started':
+      case 'clock_out': {
+        const reachedAt = closeActiveSlice(eventMs);
+        if (reachedAt != null) {
+          return reachedAt;
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  const reachedAtAsOf = pushActiveSliceUntil(asOf.getTime());
+  if (reachedAtAsOf != null) {
+    return reachedAtAsOf;
+  }
+  return null;
+}

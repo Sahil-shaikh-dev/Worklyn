@@ -144,6 +144,8 @@ function Home() {
         <View style={styles.clockSection}>
           <CheckInStatusCard
             breakTimerHms={session.breakTimerHms}
+            estimatedClockOutTimeLabel={session.estimatedClockOutTimeLabel}
+            hasReachedRequiredWorkHours={session.hasReachedRequiredWorkHours}
             mainTimerHms={session.mainTimerHms}
             onClockIn={session.clockIn}
             onClockOut={session.clockOut}

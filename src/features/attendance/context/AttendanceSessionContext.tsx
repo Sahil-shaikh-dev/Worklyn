@@ -37,6 +37,7 @@ import { sortAttendanceEvents } from '../session/sortAttendanceEvents';
 import {
   getActiveWorkedMs,
   getCurrentPauseElapsedMs,
+  getWorkTargetReachedAt,
 } from '../session/sessionDurations';
 import type { AttendanceEvent } from '../types';
 
@@ -75,12 +76,24 @@ function deriveBusinessDayKeyFromEvents(
   return getLocalCalendarDayKey(sorted[0].at);
 }
 
+const REQUIRED_WORK_HOURS = 8;
+const REQUIRED_WORK_MS = REQUIRED_WORK_HOURS * 60 * 60 * 1000;
+
+function formatEstimatedClockOutTime(at: Date): string {
+  return at.toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
 type AttendanceSessionContextValue = Readonly<{
   events: AttendanceEvent[];
   phase: SessionPhase;
   /** Live clock for duration math (updates ~1/s). */
   now: Date;
   mainTimerHms: string;
+  estimatedClockOutTimeLabel: string | null;
+  hasReachedRequiredWorkHours: boolean;
   breakTimerHms: string | null;
   statusMessage: string;
   /** Clears persisted session when calendar day ≠ stored business day (e.g. Home mount). */
@@ -328,6 +341,14 @@ export function AttendanceSessionProvider({
     const phase = deriveSessionPhase(events);
     const workMs = getActiveWorkedMs(events, now);
     const mainTimerHms = formatElapsedAsHms(workMs);
+    const requiredWorkReachedAt = getWorkTargetReachedAt(events, now, REQUIRED_WORK_MS);
+    const hasReachedRequiredWorkHours = requiredWorkReachedAt != null;
+    const remainingWorkMs = Math.max(0, REQUIRED_WORK_MS - workMs);
+    const projectedClockOutAt = new Date(now.getTime() + remainingWorkMs);
+    const estimatedClockOutTimeLabel =
+      phase === 'idle'
+        ? null
+        : formatEstimatedClockOutTime(requiredWorkReachedAt ?? projectedClockOutAt);
     const breakMs = getCurrentPauseElapsedMs(events, now);
     const breakTimerHms =
       phase === 'paused' ? formatElapsedAsHms(breakMs) : null;
@@ -344,6 +365,8 @@ export function AttendanceSessionProvider({
       phase,
       now,
       mainTimerHms,
+      estimatedClockOutTimeLabel,
+      hasReachedRequiredWorkHours,
       breakTimerHms,
       statusMessage,
       reconcileCalendarDay,
